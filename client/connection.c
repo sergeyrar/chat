@@ -117,25 +117,25 @@ static int server_connect(struct sockaddr_in *server_info)
 {
 	int rv = OK;
 	int sock_fd;
-	
-	
+
+
 	pthread_t recv_thread;
 	pthread_t send_thread;
-	
-	
-	
+
+
+
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		perror("Failed to creade socket");
 	}
-	
+
 	if (connect(sock_fd, (struct sockaddr *)server_info, sizeof(*server_info)) < 0)
-    {
-       perror("Failed to connect to remote server\n");
-       return ERROR;
-    } 
-	
-	
+	{
+	   perror("Failed to connect to remote server\n");
+	   return ERROR;
+	} 
+
+
 	if (pthread_create(&send_thread, NULL, send_to_srv_thread, &sock_fd) != 0)
 	{
 		perror("send pthread creation failed\n");
@@ -145,7 +145,7 @@ static int server_connect(struct sockaddr_in *server_info)
 	{
 		perror("rcv pthread creation failed\n");
 	}
-	
+
 	while(1)
 	{
 		usleep(1000000);
