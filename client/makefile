@@ -1,9 +1,9 @@
 CFLAGS = -Wall -g -pthread
 CC = gcc
 
-all: main
+all: client
 
-main: error.o connection.o
+client: error.o connection.o
 
 clean: 
-	rm -f main *.o 
+	rm -f client *.o 
