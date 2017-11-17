@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "connection.h"
 #include "error.h"
@@ -66,13 +67,13 @@ static int server_info_get(struct sockaddr_in *server_info)
 void * rcv_from_srv_thread(void * sock_fd_ptr)
 {
 	char recv_buf[BUF_SIZE] = {};
-	int len;
+	int len = 0;
 	int sock_fd = *(int *)sock_fd_ptr;
 	
 	
 	while (1)
 	{
-		if ((len = recv(sock_fd, recv_buf, BUF_SIZE, 0)) < 0);
+		if ((len = recv(sock_fd, recv_buf, BUF_SIZE, 0)) < 0)
 		{
 			perror("recv failed");
 			return NULL;
@@ -94,18 +95,18 @@ void * send_to_srv_thread(void * sock_fd_ptr)
 	int len;
 	int sock_fd = *(int *)sock_fd_ptr;
 	
-	
+	// stdout > /dev/null
 	do
 	{
 		fgets(send_buf, BUF_SIZE, stdin);
 		
-		if ((len = send(sock_fd, send_buf, strlen(send_buf), 0)) < 0);
+		if ((len = send(sock_fd, send_buf, strlen(send_buf), 0)) < 0)
 		{
-			perror("recv failed");
+			perror("send failed");
 			return NULL;
 		}
 		
-	}while(1);
+	} while(1);
 	
 	assert(0);
 	return NULL;
@@ -143,6 +144,11 @@ static int server_connect(struct sockaddr_in *server_info)
 	if (pthread_create(&recv_thread, NULL, rcv_from_srv_thread, &sock_fd) != 0)
 	{
 		perror("rcv pthread creation failed\n");
+	}
+	
+	while(1)
+	{
+		usleep(1000000);
 	}
 	
 	
