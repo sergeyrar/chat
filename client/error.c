@@ -14,6 +14,6 @@ char *err_code_msgs[MAX_ERROR] = {
 
 void print_error(err_codes_t err_code, const char *err_msg)
 {
-	assert(err_code < ERROR && err_code > OK);
+	assert(err_code <= ERROR && err_code >= OK);
 	fprintf(stderr, "%s, error-code %d:%s\n", err_msg, err_code, err_code_msgs[err_code]);
 }

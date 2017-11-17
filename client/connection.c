@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -59,16 +60,40 @@ static int server_info_get(struct sockaddr_in *server_info)
 
 static int server_connect(struct sockaddr_in *server_info)
 {
+	int len;
 	int rv = OK;
 	int sock_fd;
 	char recv_buf[BUF_SIZE] = {};
-	
-	
 	
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		perror("Failed to creade socket");
 	}
+	
+	if (connect(sock_fd, (struct sockaddr *)server_info, sizeof(*server_info)) < 0)
+    {
+       perror("Failed to connect to remote server\n");
+       return ERROR;
+    } 
+	
+	
+	
+	// Put in a thread
+	while (1)
+	{
+		if ((len = recv(sock_fd, recv_buf, BUF_SIZE, 0)) < 0);
+		{
+			perror("recv failed");
+			return ERROR;
+		}
+		
+		recv_buf[len] = '\0';
+		printf("%s", recv_buf);
+		
+	}
+	
+	// Send data thread
+	
 	
 	return rv;
 }
