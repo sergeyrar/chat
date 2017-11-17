@@ -5,11 +5,11 @@
 
 
 
-typedef enum err_codes_e {
+typedef enum err_code_e {
 	OK,
 	ERROR,
 	MAX_ERROR
-}err_codes_t;
+}err_code_t;
 
 
 
@@ -22,7 +22,7 @@ typedef enum err_codes_e {
  * const char *err_msg - error message to print [in]
  * 
  */
-void print_error(err_codes_t err_code, const char *err_msg);
+void print_error(err_code_t err_code, const char *err_msg);
 
 
 #endif

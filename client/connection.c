@@ -7,12 +7,13 @@
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "connection.h"
 #include "error.h"
 
 /* LOCAL FUNCTIONS */
-static int ip_address_get(struct in_addr *srv_ip)
+static err_code_t ip_address_get(struct in_addr *srv_ip)
 {
 	int rv = OK;
 	
@@ -58,12 +59,69 @@ static int server_info_get(struct sockaddr_in *server_info)
 	return rv;
 }
 
+
+
+
+
+void * rcv_from_srv_thread(void * sock_fd_ptr)
+{
+	char recv_buf[BUF_SIZE] = {};
+	int len;
+	int sock_fd = *(int *)sock_fd_ptr;
+	
+	
+	while (1)
+	{
+		if ((len = recv(sock_fd, recv_buf, BUF_SIZE, 0)) < 0);
+		{
+			perror("recv failed");
+			return NULL;
+		}
+		
+		recv_buf[len] = '\0';
+		printf("%s", recv_buf);
+		
+	}
+	
+	assert(0);
+	return NULL;
+
+}
+
+void * send_to_srv_thread(void * sock_fd_ptr)
+{
+	char send_buf[BUF_SIZE] = {};
+	int len;
+	int sock_fd = *(int *)sock_fd_ptr;
+	
+	
+	do
+	{
+		fgets(send_buf, BUF_SIZE, stdin);
+		
+		if ((len = send(sock_fd, send_buf, strlen(send_buf), 0)) < 0);
+		{
+			perror("recv failed");
+			return NULL;
+		}
+		
+	}while(1);
+	
+	assert(0);
+	return NULL;
+}
+
+
 static int server_connect(struct sockaddr_in *server_info)
 {
-	int len;
 	int rv = OK;
 	int sock_fd;
-	char recv_buf[BUF_SIZE] = {};
+	
+	
+	pthread_t recv_thread;
+	pthread_t send_thread;
+	
+	
 	
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
@@ -77,22 +135,15 @@ static int server_connect(struct sockaddr_in *server_info)
     } 
 	
 	
-	
-	// Put in a thread
-	while (1)
+	if (pthread_create(&send_thread, NULL, send_to_srv_thread, &sock_fd) != 0)
 	{
-		if ((len = recv(sock_fd, recv_buf, BUF_SIZE, 0)) < 0);
-		{
-			perror("recv failed");
-			return ERROR;
-		}
-		
-		recv_buf[len] = '\0';
-		printf("%s", recv_buf);
-		
+		perror("send pthread creation failed\n");
 	}
-	
-	// Send data thread
+		
+	if (pthread_create(&recv_thread, NULL, rcv_from_srv_thread, &sock_fd) != 0)
+	{
+		perror("rcv pthread creation failed\n");
+	}
 	
 	
 	return rv;
