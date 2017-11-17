@@ -11,15 +11,17 @@
 
 
 
-int get_client_name(char *client_name)
+int client_name_get(char *client_name)
 {
+	int rv = OK;
+	
 	char *test;
 	test = fgets(client_name, MAX_NAME, stdin);
 	assert(test != NULL);
 	
 	client_name[strlen(client_name) - 1] = '\0';
 	
-	return OK;
+	return rv;
 }
 
 
@@ -29,13 +31,18 @@ int main(int argc, char *argv[])
 	int rv;
 	char client_name[MAX_NAME];
 	
-	rv = get_client_name(client_name);
-	check_error(rv, "get_client_name failed");
+	if ((rv = client_name_get(client_name)) != OK)
+	{
+		print_error(rv, "client get name error");
+		return rv;
+	}
 	
-	rv = connect_to_server();
-	check_error(rv, "connect_to_server failed");
-	
-		
+	if ((rv = server_setup_connection(client_name)) != OK)
+	{
+		print_error(rv, "server setup connection error");
+		return rv;
+	}
+
 	
 	return OK;
 }

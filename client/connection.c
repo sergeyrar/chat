@@ -5,33 +5,97 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
-
+#include <string.h>
 
 #include "connection.h"
 #include "error.h"
 
-#define MAX_IP 20
-
-
-int connect_to_server()
+/* LOCAL FUNCTIONS */
+static int ip_address_get(struct in_addr *srv_ip)
 {
 	int rv = OK;
 	
-	struct sockaddr_in server_info;
 	char server_ip[MAX_IP];
 	FILE *server_file = fopen(SRV_FILE, "r");	
 	assert(server_file != NULL);
 	
-	fscanf(server_file, "%s", server_ip);
-	check_error(errno, "fscanf failed");
+	if (fscanf(server_file, "%s", server_ip) == EOF)
+	{
+		perror("failed to get ip address from file");		
+		return ERROR;
+	}
 	
-	inet_aton(server_ip, &server_info.sin_addr);
-
+	if (!inet_aton(server_ip, srv_ip))
+	{
+		fprintf(stderr, "Failed to convert IP address");
+		return ERROR;
+	}
 		
 	printf("got server IP - %u.%u.%u.%u\n",
-	*(unsigned char *)&server_info.sin_addr, *((unsigned char *)(&server_info.sin_addr) + 1),
-	*((unsigned char *)(&server_info.sin_addr) + 2), *((unsigned char *)(&server_info.sin_addr) + 3));
+	*(unsigned char *)srv_ip, *((unsigned char *)(srv_ip) + 1),
+	*((unsigned char *)(srv_ip) + 2), *((unsigned char *)(srv_ip) + 3));
 	
 	fclose(server_file);
+	
 	return rv;
+}
+
+static int server_info_get(struct sockaddr_in *server_info)
+{
+	int rv = OK;
+	
+	if ((rv = ip_address_get(&server_info->sin_addr)) != OK)
+	{
+		print_error(rv, "ip address get error");
+		return rv;
+	}
+	
+	server_info->sin_family = AF_INET;
+	server_info->sin_port = htons(TCP_PORT);
+	
+
+	return rv;
+}
+
+static int server_connect(struct sockaddr_in *server_info)
+{
+	int rv = OK;
+	int sock_fd;
+	char recv_buf[BUF_SIZE] = {};
+	
+	
+	
+	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	{
+		perror("Failed to creade socket");
+	}
+	
+	return rv;
+}
+
+
+/* EXPORTED FUNCTIONS */
+int server_setup_connection(const char *client_name)
+{
+	int rv = OK;
+	struct sockaddr_in server_info = {};
+	//~ memset(&server_info, 0, sizeof(struct sockaddr_in));
+	
+	if ((rv = server_info_get(&server_info)) != OK)
+	{
+		print_error(rv, "server info get error");
+		return rv;
+	}
+	
+	
+	if ((rv = server_connect(&server_info)) != OK)
+	{
+		print_error(rv, "server connect error");
+		return rv;
+	}
+	
+	
+	
+	return rv;
+
 }
