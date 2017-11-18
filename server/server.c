@@ -1,51 +1,26 @@
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <sys/types.h>
-#include <time.h> 
+
+#include "comms.h"
+#include "error.h"
 
 
-#define TCP_PORT 6666
+
 
 
 int main(int argc, char *argv[])
 {
+	int rv = OK;
+	connection_t chat_conn;
+	memset(&chat_conn, 0, sizeof(connection_t));
 	
-	// Test echo server
+	if ((rv = server_start(&chat_conn)) != OK)
+	{
+		print_error(rv, "server start error");
+		return rv;
+	}
 	
-    int listenfd = 0, connfd = 0;
-    struct sockaddr_in serv_addr; 
-
-    char sendBuff[1025];
-    time_t ticks; 
-
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    memset(&serv_addr, '0', sizeof(serv_addr));
-    memset(sendBuff, '0', sizeof(sendBuff)); 
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(6666); 
-
-    bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)); 
-
-    listen(listenfd, 10); 
-
-    while(1)
-    {
-        connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
-
-        ticks = time(NULL);
-        snprintf(sendBuff, sizeof(sendBuff), "%.24s\r\n", ctime(&ticks));
-        write(connfd, sendBuff, strlen(sendBuff)); 
-
-        close(connfd);
-        sleep(1);
-     }
 	
+	return rv;
 }
