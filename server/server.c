@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
+
 #include "comms.h"
 #include "error.h"
 
@@ -13,7 +14,7 @@
 
 void * rcv_from_clients_thread(void * chat_conn_ptr)
 {
-	int len;
+	int len = 0;
 	connection_t *chat_conn = (connection_t *)chat_conn_ptr;
 	
 	while (1)
@@ -21,9 +22,13 @@ void * rcv_from_clients_thread(void * chat_conn_ptr)
 		for (int i = 0; i < CLIENT_MAX; i++)
 		{
 			if (chat_conn->connfd[i] != 0)
-			{	//should probably be NON-blocking recv!
+			{	
 				if ((len = recv(chat_conn->connfd[i], chat_conn->chat_buff.data, BUF_MAX, 0)) < 0)
 				{
+					if (errno == EAGAIN || errno == EWOULDBLOCK)
+					{
+						continue;
+					}
 					perror("recv failed");
 					return NULL;
 				}
