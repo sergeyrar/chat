@@ -30,6 +30,10 @@ int server_start(connection_t *chat_conn)
 	while(1)
     {
         chat_conn->connfd[i] = accept(chat_conn->listenfd, (struct sockaddr*)NULL, NULL); 
+
+#ifdef DEBUG_FLAG
+        printf("Accepted a new connection %d\n", i);
+#endif
         i++;
         usleep(1000000);
     }

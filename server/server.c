@@ -3,7 +3,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <assert.h>
-
+#include <stdbool.h>
 
 #include "comms.h"
 #include "error.h"
@@ -47,19 +47,22 @@ void * send_to_clients_thread(void * chat_conn_ptr)
 	
 	while (1)
 	{
-		for (int i = 0; i < CLIENT_MAX; i++)
+		if (chat_conn->chat_buff.buf_len > 0)
 		{
-			if (chat_conn->connfd[i] != 0)
+			for (int i = 0; i < CLIENT_MAX; i++)
 			{
-				if ((len = send(chat_conn->connfd[i], chat_conn->chat_buff.data, chat_conn->chat_buff.buf_len, 0)) < 0)
+				if (chat_conn->connfd[i] != 0)
 				{
-					perror("send failed");
-					return NULL;
+						if ((len = send(chat_conn->connfd[i], chat_conn->chat_buff.data, chat_conn->chat_buff.buf_len, 0)) < 0)
+						{
+							perror("send failed");
+							return NULL;
+						}
 				}
 			}
+			
+			chat_conn->chat_buff.buf_len = 0;
 		}
-		
-		chat_conn->chat_buff.buf_len = 0;
 	}
 	
 	assert(0);

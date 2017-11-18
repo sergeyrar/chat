@@ -1,4 +1,4 @@
-CFLAGS = -Wall -g -pthread
+CFLAGS = -Wall -g -pthread -DDEBUG_FLAG
 CC = gcc
 
 all: server
