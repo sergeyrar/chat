@@ -5,8 +5,8 @@ http://www.thegeekstuff.com/2011/12/c-socket-programming/?utm_source=feedburner
 
 
 TODO:
-1- Convert server to daemon.
-2- Client shouldn't see its own prints locally. (probably need to remove a printf somewhere in the code...)
+1- Convert server to daemon - Done
+2- Client shouldn't see its own prints locally. (probably need to remove a printf somewhere in the code...) - Done
 3- Append given name to text in chat.
 4- Chat should be in a new clean window.
 5- Send chat history to new connections - (Need to allocate a buffer for history, which will be updated with te recent data)

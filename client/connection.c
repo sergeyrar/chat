@@ -99,6 +99,7 @@ void * send_to_srv_thread(void * sock_fd_ptr)
 	do
 	{
 		fgets(send_buf, BUF_SIZE, stdin);
+		printf("%c[A\r", 27);
 		
 		if ((len = send(sock_fd, send_buf, strlen(send_buf), 0)) < 0)
 		{
