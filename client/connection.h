@@ -13,7 +13,7 @@
  * Description: Connect to a remote chat server.
  * 
  */
-int server_setup_connection(const char *client_name);
+int server_setup_connection();
 
 
 #endif

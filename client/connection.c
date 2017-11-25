@@ -13,7 +13,25 @@
 #include "connection.h"
 #include "error.h"
 
+
+#define MAX_NAME 50
+
 /* LOCAL FUNCTIONS */
+
+
+static int client_name_get(char *client_name)
+{
+	int rv = OK;
+	
+	char *test;
+	test = fgets(client_name, MAX_NAME, stdin);
+	assert(test != NULL);
+	
+	client_name[strlen(client_name) - 1] = ':';
+	
+	return rv;
+}
+
 static err_code_t ip_address_get(struct in_addr *srv_ip)
 {
 	int rv = OK;
@@ -80,7 +98,8 @@ void * rcv_from_srv_thread(void * sock_fd_ptr)
 		}
 		
 		recv_buf[len] = '\0';
-		printf("%s", recv_buf);
+		printf("%s\n", recv_buf);
+		fflush(stdout);
 		
 	}
 	
@@ -89,18 +108,32 @@ void * rcv_from_srv_thread(void * sock_fd_ptr)
 
 }
 
-void * send_to_srv_thread(void * sock_fd_ptr)
+static void append_name(char *send_buf, char *client_name)
 {
+	memcpy(&send_buf[strlen(client_name)], send_buf, strlen(send_buf) + 1); // copy '\0' too.
+	memcpy(send_buf, client_name, strlen(client_name));
+}
+
+void * send_to_srv_thread(void * sock_fd_ptr)
+{ 
+	int rv;
 	char send_buf[BUF_SIZE] = {};
 	int len;
 	int sock_fd = *(int *)sock_fd_ptr;
+	char client_name[MAX_NAME];
 	
-	// stdout > /dev/null
+	if ((rv = client_name_get(client_name)) != OK)
+	{
+		print_error(rv, "client get name error");
+		return NULL;
+	}
+	
 	do
 	{
-		fgets(send_buf, BUF_SIZE, stdin);
+		fgets(send_buf, BUF_SIZE - MAX_NAME, stdin);
 		printf("%c[A\r", 27);
-		
+		append_name(send_buf, client_name);	
+			
 		if ((len = send(sock_fd, send_buf, strlen(send_buf), 0)) < 0)
 		{
 			perror("send failed");
@@ -158,7 +191,7 @@ static int server_connect(struct sockaddr_in *server_info)
 
 
 /* EXPORTED FUNCTIONS */
-int server_setup_connection(const char *client_name)
+int server_setup_connection()
 {
 	int rv = OK;
 	struct sockaddr_in server_info = {};
