@@ -14,7 +14,7 @@
 #include "comms.h"
 #include "error.h"
 
-
+pthread_mutex_t mutex;
 
 
 void * rcv_from_clients_thread(void * chat_conn_ptr)
@@ -37,11 +37,11 @@ void * rcv_from_clients_thread(void * chat_conn_ptr)
 					perror("recv failed");
 					return NULL;
 				}
-				
+				//pthread_mutex_lock(&mutex);
 				chat_conn->chat_buff.buf_len += len;
+				//pthread_mutex_unlock(&mutex);
 			}
 		}
-		
 	}
 	
 	assert(0);
@@ -70,8 +70,9 @@ void * send_to_clients_thread(void * chat_conn_ptr)
 						}
 				}
 			}
-			
+			//pthread_mutex_lock(&mutex);
 			chat_conn->chat_buff.buf_len = 0;
+			//pthread_mutex_unlock(&mutex);
 		}
 	}
 	

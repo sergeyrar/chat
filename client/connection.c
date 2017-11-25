@@ -16,21 +16,16 @@
 
 #define MAX_NAME 50
 
+
+
+extern char client_name[MAX_NAME];
+
+
+
 /* LOCAL FUNCTIONS */
 
 
-static int client_name_get(char *client_name)
-{
-	int rv = OK;
-	
-	char *test;
-	test = fgets(client_name, MAX_NAME, stdin);
-	assert(test != NULL);
-	
-	client_name[strlen(client_name) - 1] = ':';
-	
-	return rv;
-}
+
 
 static err_code_t ip_address_get(struct in_addr *srv_ip)
 {
@@ -61,22 +56,6 @@ static err_code_t ip_address_get(struct in_addr *srv_ip)
 	return rv;
 }
 
-static int server_info_get(struct sockaddr_in *server_info)
-{
-	int rv = OK;
-	
-	if ((rv = ip_address_get(&server_info->sin_addr)) != OK)
-	{
-		print_error(rv, "ip address get error");
-		return rv;
-	}
-	
-	server_info->sin_family = AF_INET;
-	server_info->sin_port = htons(TCP_PORT);
-	
-
-	return rv;
-}
 
 
 
@@ -99,8 +78,6 @@ void * rcv_from_srv_thread(void * sock_fd_ptr)
 		
 		recv_buf[len] = '\0';
 		printf("%s\n", recv_buf);
-		fflush(stdout);
-		
 	}
 	
 	assert(0);
@@ -110,27 +87,23 @@ void * rcv_from_srv_thread(void * sock_fd_ptr)
 
 static void append_name(char *send_buf, char *client_name)
 {
-	memcpy(&send_buf[strlen(client_name)], send_buf, strlen(send_buf) + 1); // copy '\0' too.
+	char temp_buf[BUF_SIZE];
+	
+	memcpy(temp_buf, send_buf, strlen(send_buf) + 1);
+	
+	memcpy(&send_buf[strlen(client_name)], temp_buf, strlen(temp_buf) + 1); // copy '\0' too.
 	memcpy(send_buf, client_name, strlen(client_name));
 }
 
 void * send_to_srv_thread(void * sock_fd_ptr)
 { 
-	int rv;
 	char send_buf[BUF_SIZE] = {};
 	int len;
-	int sock_fd = *(int *)sock_fd_ptr;
-	char client_name[MAX_NAME];
-	
-	if ((rv = client_name_get(client_name)) != OK)
-	{
-		print_error(rv, "client get name error");
-		return NULL;
-	}
+	int sock_fd = *(int *)sock_fd_ptr;	
 	
 	do
 	{
-		fgets(send_buf, BUF_SIZE - MAX_NAME, stdin);
+		fgets(send_buf, BUF_SIZE - MAX_NAME, stdin);	
 		printf("%c[A\r", 27);
 		append_name(send_buf, client_name);	
 			
@@ -147,10 +120,15 @@ void * send_to_srv_thread(void * sock_fd_ptr)
 }
 
 
-static int server_connect(struct sockaddr_in *server_info)
+
+
+/* EXPORTED FUNCTIONS */
+
+int server_connect(struct sockaddr_in *server_info)
 {
 	int rv = OK;
 	int sock_fd;
+
 
 
 	pthread_t recv_thread;
@@ -190,28 +168,19 @@ static int server_connect(struct sockaddr_in *server_info)
 }
 
 
-/* EXPORTED FUNCTIONS */
-int server_setup_connection()
+int server_info_get(struct sockaddr_in *server_info)
 {
 	int rv = OK;
-	struct sockaddr_in server_info = {};
-	//~ memset(&server_info, 0, sizeof(struct sockaddr_in));
 	
-	if ((rv = server_info_get(&server_info)) != OK)
+	if ((rv = ip_address_get(&server_info->sin_addr)) != OK)
 	{
-		print_error(rv, "server info get error");
+		print_error(rv, "ip address get error");
 		return rv;
 	}
 	
+	server_info->sin_family = AF_INET;
+	server_info->sin_port = htons(TCP_PORT);
 	
-	if ((rv = server_connect(&server_info)) != OK)
-	{
-		print_error(rv, "server connect error");
-		return rv;
-	}
-	
-	
-	
-	return rv;
 
+	return rv;
 }

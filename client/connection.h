@@ -10,10 +10,18 @@
 
 
 /*
- * Description: Connect to a remote chat server.
+ * Description: Get chat server information.
  * 
  */
-int server_setup_connection();
+int server_info_get(struct sockaddr_in *server_info);
+
+
+
+/*
+ * Description: Connect to chat server.
+ * 
+ */
+int server_connect(struct sockaddr_in *server_info);
 
 
 #endif
